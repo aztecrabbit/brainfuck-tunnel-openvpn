@@ -11,6 +11,13 @@ import (
 	"github.com/aztecrabbit/libutils"
 )
 
+var (
+	ConfigDefault = &Config{
+		FileName: "~/account.ovpn",
+		AuthFileName: "~/account.ovpn.auth",
+	}
+)
+
 func init() {
 	libutils.PathFile = os.Args[0]
 }
@@ -57,6 +64,9 @@ func (o *Openvpn) Start() {
 
 			if strings.Contains(line, "Initialization Sequence Completed") {
 				liblog.LogInfo("Connected", "INFO", liblog.Colors["Y1"])
+
+			} else if strings.Contains(line, "Connection reset") {
+				liblog.LogInfo("Reconnecting", "INFO", liblog.Colors["G1"])
 
 			} else if strings.Contains(line, "Exiting due to fatal error") {
 				liblog.LogInfo(

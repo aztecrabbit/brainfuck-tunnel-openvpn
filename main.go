@@ -26,8 +26,6 @@ type Config struct {
 }
 
 func init() {
-	libutils.PathFile = os.Args[0]
-
 	InterruptHandler := &libutils.InterruptHandler{
 		Handle: func() {
 			libopenvpn.Stop()
@@ -48,27 +46,17 @@ func main() {
 
 	config := new(Config)
 	configDefault := new(Config)
-	configDefault.Inject = &libinject.Config{
-		Port: "8989",
-		ProxyHost: "202.152.240.50",
-		ProxyPort: "80",
-		ProxyPayload: "[raw][crlf]Host: t.co[crlf]Host: [crlf][crlf]",
-		ProxyTimeout: 10,
-		ShowLog: false,
-	}
-	configDefault.Openvpn = &libopenvpn.Config{
-		FileName: "~/account.ovpn",
-		AuthFileName: "~/account.ovpn.auth",
-	}
+	configDefault.Inject = libinject.ConfigDefault
+	configDefault.Openvpn = libopenvpn.ConfigDefault
 
 	libutils.JsonReadWrite(libutils.RealPath("config.json"), config, configDefault)
 
-	if len(os.Args) > 1 {
-		config.Inject.Port = os.Args[1]
-	}
-
 	Inject := new(libinject.Inject)
 	Inject.Config = config.Inject
+
+	if len(os.Args) > 1 {
+		Inject.Config.Port = os.Args[1]
+	}
 
 	go Inject.Start()
 
