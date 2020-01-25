@@ -4,6 +4,7 @@ import (
 	"os"
 	"fmt"
 	"time"
+	"strings"
 
 	"github.com/aztecrabbit/liblog"
 	"github.com/aztecrabbit/libutils"
@@ -28,7 +29,6 @@ type Config struct {
 func init() {
 	InterruptHandler := &libutils.InterruptHandler{
 		Handle: func() {
-			libopenvpn.Stop()
 			liblog.LogKeyboardInterrupt()
 		},
 	}
@@ -46,8 +46,8 @@ func main() {
 
 	config := new(Config)
 	configDefault := new(Config)
-	configDefault.Inject = libinject.ConfigDefault
-	configDefault.Openvpn = libopenvpn.ConfigDefault
+	configDefault.Inject = libinject.DefaultConfig
+	configDefault.Openvpn = libopenvpn.DefaultConfig
 
 	libutils.JsonReadWrite(libutils.RealPath("config.json"), config, configDefault)
 
@@ -67,7 +67,10 @@ func main() {
 
 	Openvpn := new(libopenvpn.Openvpn)
 	Openvpn.Config = config.Openvpn
-	Openvpn.ProxyHost = Inject.Config.ProxyHost
+	for proxyHostPort, _ := range Inject.Config.Proxies {
+		Openvpn.ProxyHost = strings.Split(proxyHostPort, ":")[0]
+		break
+	}
 	Openvpn.InjectPort = Inject.Config.Port
 	Openvpn.Start()
 }

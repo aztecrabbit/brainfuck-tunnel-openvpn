@@ -1,30 +1,25 @@
 package libopenvpn
 
 import (
-	"os"
 	"os/exec"
 	"fmt"
 	"bufio"
 	"strings"
+	"syscall"
 
 	"github.com/aztecrabbit/liblog"
-	"github.com/aztecrabbit/libutils"
 )
 
 var (
-	ConfigDefault = &Config{
+	Loop = true
+	DefaultConfig = &Config{
 		FileName: "~/account.ovpn",
 		AuthFileName: "~/account.ovpn.auth",
 	}
 )
 
-func init() {
-	libutils.PathFile = os.Args[0]
-}
-
 func Stop() {
-	command := exec.Command("killall openvpn > /dev/null 2>&1 &")
-	command.Start()
+	Loop = false
 }
 
 type Config struct {
@@ -40,7 +35,7 @@ type Openvpn struct {
 
 func (o *Openvpn) Start() {
 	command := exec.Command(
-		"dash", "-c", fmt.Sprintf(
+		"sh", "-c", fmt.Sprintf(
 			"openvpn --config %s --auth-user-pass %s " +
 				"--route %s 255.255.255.255 net_gateway " +
 				"--http-proxy 127.0.0.1 %s",
@@ -59,7 +54,7 @@ func (o *Openvpn) Start() {
 	scanner := bufio.NewScanner(stdout)
 	go func() {
 		var line string
-		for scanner.Scan() {
+		for Loop && scanner.Scan() {
 			line = scanner.Text()
 
 			if strings.Contains(line, "Initialization Sequence Completed") {
@@ -81,6 +76,8 @@ func (o *Openvpn) Start() {
 
 			}
 		}
+
+		command.Process.Signal(syscall.SIGTERM)
 	}()
 
 	command.Start()
