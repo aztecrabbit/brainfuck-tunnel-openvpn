@@ -45,11 +45,11 @@ func main() {
 	)
 
 	config := new(Config)
-	configDefault := new(Config)
-	configDefault.Inject = libinject.DefaultConfig
-	configDefault.Openvpn = libopenvpn.DefaultConfig
+	defaultConfig := new(Config)
+	defaultConfig.Inject = libinject.DefaultConfig
+	defaultConfig.Openvpn = libopenvpn.DefaultConfig
 
-	libutils.JsonReadWrite(libutils.RealPath("config.json"), config, configDefault)
+	libutils.JsonReadWrite(libutils.RealPath("config.json"), config, defaultConfig)
 
 	Inject := new(libinject.Inject)
 	Inject.Config = config.Inject
