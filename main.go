@@ -67,8 +67,8 @@ func main() {
 
 	Openvpn := new(libopenvpn.Openvpn)
 	Openvpn.Config = config.Openvpn
-	for proxyHostPort, _ := range Inject.Config.Proxies {
-		Openvpn.ProxyHost = strings.Split(proxyHostPort, ":")[0]
+	for _, proxyHostPortList := range Inject.Config.Rules {
+		Openvpn.ProxyHost = strings.Split(proxyHostPortList[0], ":")[0]
 		break
 	}
 	Openvpn.InjectPort = Inject.Config.Port
