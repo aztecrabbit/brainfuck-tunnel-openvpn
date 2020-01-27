@@ -15,10 +15,14 @@ import (
 const (
 	appName = "Brainfuck Tunnel"
 	appVersionName = "Openvpn"
-	appVersionCode = "200122"
+	appVersionCode = "200127"
 
 	copyrightYear = "2020"
 	copyrightAuthor = "Aztec Rabbit"
+)
+
+var (
+	InterruptHandler = new(libutils.InterruptHandler)
 )
 
 type Config struct {
@@ -27,10 +31,9 @@ type Config struct {
 }
 
 func init() {
-	InterruptHandler := &libutils.InterruptHandler{
-		Handle: func() {
-			liblog.LogKeyboardInterrupt()
-		},
+	InterruptHandler.Handle = func() {
+		libopenvpn.Stop()
+		liblog.LogKeyboardInterrupt()
 	}
 	InterruptHandler.Start()
 }
@@ -73,4 +76,6 @@ func main() {
 	}
 	Openvpn.InjectPort = Inject.Config.Port
 	Openvpn.Start()
+
+	InterruptHandler.Wait()
 }

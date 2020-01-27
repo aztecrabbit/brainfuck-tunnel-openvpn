@@ -33,6 +33,16 @@ type Openvpn struct {
 	InjectPort string
 }
 
+func (o *Openvpn) LogInfoSplit(message string, slice int, color string) {
+	if Loop {
+		liblog.LogInfoSplit(message, slice, "INFO", color)
+	}
+}
+
+func (o *Openvpn) LogInfo(message string, color string) {
+	o.LogInfoSplit(message, 0, color)
+}
+
 func (o *Openvpn) Start() {
 	command := exec.Command(
 		"sh", "-c", fmt.Sprintf(
@@ -58,21 +68,22 @@ func (o *Openvpn) Start() {
 			line = scanner.Text()
 
 			if strings.Contains(line, "Initialization Sequence Completed") {
-				liblog.LogInfo("Connected", "INFO", liblog.Colors["Y1"])
+				o.LogInfo("Connected", liblog.Colors["Y1"])
 
 			} else if strings.Contains(line, "Connection reset") {
-				liblog.LogInfo("Reconnecting", "INFO", liblog.Colors["G1"])
+				o.LogInfo("Reconnecting", liblog.Colors["G1"])
 
 			} else if strings.Contains(line, "Exiting due to fatal error") {
-				liblog.LogInfo(
+				o.LogInfo(
 					"Fatal Error:\n\n" +
 						"|   Please run as root or something like that!\n" +
 						"|   I don't know why exacly :D\n" +
 						"|\n",
-					"INFO", liblog.Colors["R1"])
+					liblog.Colors["R1"],
+				)
 
 			} else {
-				liblog.LogInfoSplit(line[25:], 22, "INFO", liblog.Colors["G2"])
+				o.LogInfoSplit(line[25:], 22, liblog.Colors["G2"])
 
 			}
 		}
